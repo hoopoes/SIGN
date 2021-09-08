@@ -3,6 +3,7 @@
 import os, sys
 import copy
 import math
+import pandas as pd
 
 import torch
 from torch import nn, Tensor
@@ -45,12 +46,27 @@ class GraphInspector(object):
         else:
             ValueError("data has no attribute named edge_type")
 
+        if attribute == 'x' and hasattr(data, 'x'):
+            num_node_features = data.x.size(-1)
+            print(f"num_node_features: {num_node_features}")
+        else:
+            ValueError("data has no node features")
+
 
 def get_device():
     return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def get_num_params(model):
     return sum([p.numel() for p in model.parameters()])
+
+def get_parameter_report(model):
+    d = {'name': [], 'shape': [], 'num_param': []}
+    for a, b in model.named_parameters():
+        d['name'].append(a)
+        d['shape'].append(list(b.shape))
+        d['num_param'].append(b.numel())
+    report = pd.DataFrame(d)
+    return report
 
 
 # copy layer
